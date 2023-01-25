@@ -1,17 +1,33 @@
 <script setup lang="ts">
-import { onMounted, ref, computed } from "vue"
+import { ref, computed, onMounted, watch } from "vue"
 import { punkapiResponse } from "./interfaces/beer.interface"
 const beerList = ref<punkapiResponse[]>([])
+
+let debounceTimeout: number | null = null
 const filterName = ref("")
 const filterABV = ref("")
+const food = ref("")
 
-onMounted(async () => {
-  const response = await fetch("https://api.punkapi.com/v2/beers")
-  const json: punkapiResponse[] = await response.json()
+watch([filterName, filterABV, food], async ([newFilterName, newFilterABV, newFood]) =>{
+  if(debounceTimeout != null) {clearTimeout(debounceTimeout)}
 
-  beerList.value = json
-  console.log(beerList.value);
-})
+  debounceTimeout = setTimeout(async () => {
+    let query = ""
+    if(newFilterName != "" || newFilterABV != ""  || newFood != null){
+      query = "?"
+      query += newFilterName ? `beer_name=${newFilterName}` : ""
+      query += newFilterABV ? `abv=${newFilterABV}` : ""
+      query += newFood ? `&food=${newFood}` : ""      
+    }
+
+    const response = await fetch("https://api.punkapi.com/v2/beers/" + query)
+    const json: punkapiResponse[] = await response.json()
+
+    beerList.value = json
+    console.log(json)
+    debounceTimeout = null
+  }, 500)
+}, {immediate: true})
 
 const AddPriceToBeerList = computed(() => {
   return beerList.value.map(beer => {
@@ -23,10 +39,7 @@ const AddPriceToBeerList = computed(() => {
   })
 })
 
-const filterdBeerList = computed(() => {
-  return beerList.value.filter(beer => beer.name.toLocaleLowerCase().includes(filterName.value.toLocaleLowerCase())
-  ).filter(beer => beer.abv >= Number(filterABV.value))
-})
+
 
 </script>
 <template>
@@ -36,8 +49,9 @@ const filterdBeerList = computed(() => {
         <div class="text-3xl mb-4 h-8">Beers</div>
         <input class="bg-black" type="text" v-model="filterName">
         <input class="bg-black" type="number" v-model="filterABV">
+        <input class="bg-black" type="text" v-model="food">
       </div>
-      <template v-for="beer in filterdBeerList" :key="beer.id">
+      <template v-for="beer in beerList" :key="beer.id">
         <template v-for="beer in AddPriceToBeerList" :key="beer.price"></template>
         <div class="bg-gray-400 mb-2 p-4 flex items-center rounded-md text-black">
           <img class="w-4" v-if="beer.image_url != null" :src="beer.image_url" :alt="`Image of ${beer.name}`">
