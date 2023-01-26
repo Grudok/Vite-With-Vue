@@ -1,4 +1,6 @@
-import { punkapiResponse } from "./interfaces/beer.interface"
+<script setup lang="ts">
+import { ref , watch, computed} from 'vue';
+import { punkapiResponse } from "../interfaces/beer.interface"
 const beerList = ref<punkapiResponse[]>([])
 
 let debounceTimeout: number | null = null
@@ -68,4 +70,4 @@ const AddPriceToBeerList = computed(() => {
 
 <style scoped>
 
-</style>
+</style> 
