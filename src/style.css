@@ -2,4 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+.btn {
+    @apply border border-black min-w-[50px] min-h-[40px] bg-gray-300 text-black;
+}
 
+.btnNumber {
+    @apply border border-black min-w-[50px] min-h-[40px] bg-gray-100 text-black;
+}
+
+.btnEquals {
+    @apply border border-black min-w-[50px] min-h-[40px] bg-blue-500 text-white;
+}

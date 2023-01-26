@@ -1,69 +1,64 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from "vue"
-import { punkapiResponse } from "./interfaces/beer.interface"
-const beerList = ref<punkapiResponse[]>([])
+const calculation: any = ref(0);
 
 let debounceTimeout: number | null = null
-const filterName = ref("")
-const filterABV = ref("")
-const food = ref("")
-
-watch([filterName, filterABV, food], async ([newFilterName, newFilterABV, newFood]) =>{
-  if(debounceTimeout != null) {clearTimeout(debounceTimeout)}
+watch(calculation, async (newCalculation) => {
+  if (debounceTimeout != null) { clearTimeout(debounceTimeout) }
 
   debounceTimeout = setTimeout(async () => {
-    let query = ""
-    if(newFilterName != "" || newFilterABV != ""  || newFood != null){
-      query = "?"
-      query += newFilterName ? `beer_name=${newFilterName}` : ""
-      query += newFilterABV ? `abv=${newFilterABV}` : ""
-      query += newFood ? `&food=${newFood}` : ""      
-    }
+    const query = new URLSearchParams([["expr", calculation.value]])
+    const response = await fetch("http://api.mathjs.org/v4/?" + query.toString())
 
-    const response = await fetch("https://api.punkapi.com/v2/beers/" + query)
-    const json: punkapiResponse[] = await response.json()
+    calculation.value = await response.text();
 
-    beerList.value = json
-    console.log(json)
     debounceTimeout = null
-  }, 500)
-}, {immediate: true})
-
-const AddPriceToBeerList = computed(() => {
-  return beerList.value.map(beer => {
-    beer.price = 3
-    beer.deposit = 0.29
-    beer.price_ingredients = (beer.ingredients.malt.length * 0.2) + (beer.ingredients.hops.length * 0.2)
-    beer.price = beer.price + beer.price_ingredients
-    return beer
-  })
-})
-
+  }, 3400)
+}, { immediate: true })
 
 
 </script>
 <template>
   <div class="bg-gray-800 text-white flex justify-center items-center min-h-screen">
     <div class="flex flex-col w-fit">
-      <div class="flex items-center space-x-4">
-        <div class="text-3xl mb-4 h-8">Beers</div>
-        <input class="bg-black" type="text" v-model="filterName">
-        <input class="bg-black" type="number" v-model="filterABV">
-        <input class="bg-black" type="text" v-model="food">
+      <div id="result">
+        <p> {{ calculation || '0'}} </p>
       </div>
-      <template v-for="beer in beerList" :key="beer.id">
-        <template v-for="beer in AddPriceToBeerList" :key="beer.price"></template>
-        <div class="bg-gray-400 mb-2 p-4 flex items-center rounded-md text-black">
-          <img class="w-4" v-if="beer.image_url != null" :src="beer.image_url" :alt="`Image of ${beer.name}`">
-          <div class="px-4">
-            <span>{{ beer.id }}</span>
-            {{ beer.name }}
-            <p class="text-xs max-w-d">{{ beer.brewers_tips }}</p>
-            <p class="text-xs max-w-d"> ABV/Alcohol: {{ beer.abv }} %</p>
-            <p class="text-xs max-w-d"> Price: {{ beer.price }} €</p>
-          </div>
+      <input class="w-full h-12 border border-black text-black" type="string" v-model="calculation.value">
+      <div>
+        <div class="grid grid-cols-6 gap-2 pt-3 bg-slate-600 px-5 py-5">
+          <button @click="calculation = String(calculation + 3.14)" class="btn">π</button>
+          <button class="btn">x!</button>
+          <button @click="calculation = String(calculation + '(')" class="btn">(</button>
+          <button @click="calculation = String(calculation + ')')" class="btn">)</button>
+          <button class="btn">%</button>
+          <button @click="calculation = 0" class="btn">AC</button>
+          <button class="btn">e</button>
+          <button class="btn">ln</button>
+          <button @click="calculation = String(calculation + 7)" class="btnNumber">7</button>
+          <button @click="calculation = String(calculation + 8)" class="btnNumber">8</button>
+          <button @click="calculation = String(calculation + 9)" class="btnNumber">9</button>
+          <button @click="calculation = String(calculation + '/')" class="btn">/</button>
+          <button class="btn">sin</button>
+          <button class="btn">log</button>
+          <button @click="calculation = String(calculation + 4)" class="btnNumber">4</button>
+          <button @click="calculation = String(calculation + 5)" class="btnNumber">5</button>
+          <button @click="calculation = String(calculation + 6)" class="btnNumber">6</button>
+          <button @click="calculation = String(calculation + '*')" class="btn">x</button>
+          <button class="btn">cos</button>
+          <button class="btn">√</button>
+          <button @click="calculation = String(calculation + 1)" class="btnNumber">1</button>
+          <button @click="calculation = String(calculation + 2)" class="btnNumber">2</button>
+          <button @click="calculation = String(calculation + 3)" class="btnNumber">3</button>
+          <button @click="calculation = String(calculation + '-')" class="btn">-</button>
+          <button class="btn">tan</button>
+          <button class="btn">x²</button>
+          <button @click="calculation = String(calculation + 0)" class="btnNumber">0</button>
+          <button @click="calculation = String(calculation + '.')" class="btnNumber">.</button>
+          <button @click="" class="btnEquals">=</button>
+          <button @click="calculation = String(calculation + '+')" class="btn">+</button>
         </div>
-      </template>
+      </div>
     </div>
   </div>
 </template>
