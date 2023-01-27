@@ -19,6 +19,7 @@ export interface punkAPIResponse {
     food_pairing: string[]
     brewers_tips: string
     contributed_by: string
+    price: PriceTag[]
 }
 
 export interface PriceTag {

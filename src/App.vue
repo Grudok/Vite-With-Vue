@@ -1,34 +1,36 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import beerCard from './components/beerCard.vue';
-import navBar from './components/navBar.vue';
+import { onMounted, ref, watchEffect } from 'vue';
+import beerCard from './examples/beerCard.vue';
+import navBar from './examples/navBar.vue';
 import axios from 'axios';
-import {punkAPIResponse} from './interfaces/index';
+import type { punkAPIResponse } from './interfaces/index';
 
 const craftBeers = ref<punkAPIResponse[]>([]);
+const filter = ref({
+  food: "",
+  search: "",
+})
 
-
-onMounted(async() => {
-  const axiosResponse = await axios.get<punkAPIResponse[]>("https://api.punkapi.com/v2/beers")
-
+watchEffect(async () => {
+  const querry = new URLSearchParams()
+  if (filter.value.search != '') {
+    querry.append("beer_name", filter.value.search)
+  }
+  if (filter.value.food != '') {
+    querry.append("food", filter.value.food)
+  }
+  const axiosResponse = await axios.get<punkAPIResponse[]>("https://api.punkapi.com/v2/beers?" + querry.toString());
   craftBeers.value = axiosResponse.data
 });
-
-async function updateCraftBeers(searchTerm:string) {
-  const querry = new URLSearchParams([["beer_name", searchTerm]])
-
-  const axiosResponse = await axios.get<punkAPIResponse[]>("https://api.punkapi.com/v2/beers?" + querry.toString());
-
-  craftBeers.value = axiosResponse.data
-}
 
 </script>
 
 <template>
-  <navBar @searchTermChanged="updateCraftBeers"/>
+  <navBar @searchTermChanged="(value) => (filter.search = value)"
+    @foodPairingChanged="(value) => (filter.food = value)" />
   <div class="flex flex-col space-y-2">
-    <beerCard v-for="craftBeer in craftBeers" :craftBeer="craftBeer"/>
+    <beerCard v-for="craftBeer in craftBeers" :craftBeer="craftBeer" />
   </div>
 </template>
 
-<style></style>
+<style scoped></style>
