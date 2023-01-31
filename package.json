@@ -9,7 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@types/uuid": "^9.0.0",
     "axios": "^1.2.4",
+    "uuid": "^9.0.0",
     "vue": "^3.2.45",
     "vue-router": "^4.1.6"
   },

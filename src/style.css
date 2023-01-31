@@ -13,3 +13,7 @@
 .btnEquals {
     @apply border border-black min-w-[50px] min-h-[40px] bg-blue-500 text-white;
 }
+
+.btns {
+    @apply bg-white text-black rounded-full shadow-lg w-64 p-12 mx-6 transition-colors duration-300 hover:bg-stone-400;
+}
